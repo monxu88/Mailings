@@ -1,0 +1,1981 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ColdMail — Presencia</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;background:#f5f5f3;color:#1a1a1a;min-height:100vh}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:210px;min-width:210px;background:#fff;border-right:1px solid #e5e5e3;display:flex;flex-direction:column;padding:0}
+.sidebar-header{padding:1.2rem 1rem 1rem;border-bottom:1px solid #e5e5e3}
+.sidebar-logo{font-size:15px;font-weight:600;color:#1a1a1a}
+.sidebar-logo span{color:#888;font-weight:400;font-size:12px;display:block;margin-top:2px}
+nav{padding:.5rem 0;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;font-size:13px;color:#555;border-left:2px solid transparent;transition:all .1s}
+.nav-item:hover{background:#f5f5f3;color:#1a1a1a}
+.nav-item.active{background:#f5f5f3;color:#1a1a1a;font-weight:500;border-left:2px solid #1a1a1a}
+.nav-item svg{width:15px;height:15px;opacity:.6;flex-shrink:0}
+.main{flex:1;overflow-y:auto;background:#f5f5f3}
+.page{display:none;padding:1.5rem;max-width:960px}
+.page.active{display:block}
+h1{font-size:20px;font-weight:600;margin-bottom:1.5rem}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+.metric{background:#fff;border:1px solid #e5e5e3;border-radius:10px;padding:1rem 1.2rem}
+.metric-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.metric-value{font-size:26px;font-weight:600}
+.metric-value.green{color:#1D9E75}.metric-value.amber{color:#BA7517}.metric-value.red{color:#E24B4A}
+.card{background:#fff;border:1px solid #e5e5e3;border-radius:10px;padding:1.2rem;margin-bottom:1rem}
+.card-title{font-size:13px;font-weight:600;margin-bottom:1rem;color:#1a1a1a}
+.toolbar{display:flex;gap:8px;align-items:center;margin-bottom:1rem;flex-wrap:wrap}
+input[type=text],input[type=number],input[type=password],input[type=email],select,textarea{
+  background:#fff;border:1px solid #ddd;border-radius:7px;padding:7px 10px;font-size:13px;color:#1a1a1a;outline:none;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:#666}
+textarea{width:100%;min-height:120px;resize:vertical;line-height:1.6}
+.btn{cursor:pointer;border-radius:7px;font-size:13px;padding:7px 14px;font-family:inherit;transition:all .1s;border:1px solid transparent}
+.btn-primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a}.btn-primary:hover{background:#333}
+.btn-outline{background:#fff;color:#1a1a1a;border-color:#ddd}.btn-outline:hover{background:#f5f5f3}
+.btn-danger{background:#fff;color:#E24B4A;border-color:#f0bcbc;font-size:12px;padding:5px 10px}.btn-danger:hover{background:#FCEBEB}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-success{background:#1D9E75;color:#fff;border-color:#1D9E75}.btn-success:hover{background:#0F6E56}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em;padding:8px 10px;border-bottom:1px solid #e5e5e3}
+td{padding:9px 10px;border-bottom:1px solid #f0f0ee;color:#1a1a1a}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafaf8}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.badge-green{background:#EAF3DE;color:#3B6D11}.badge-red{background:#FCEBEB;color:#A32D2D}
+.badge-amber{background:#FAEEDA;color:#854F0B}.badge-gray{background:#F1EFE8;color:#5F5E5A}
+.badge-blue{background:#E6F1FB;color:#185FA5}
+.upload-zone{border:2px dashed #ddd;border-radius:10px;padding:2.5rem;text-align:center;cursor:pointer;transition:.1s;color:#888}
+.upload-zone:hover{border-color:#999;background:#fafaf8}
+.upload-zone.drag{border-color:#1D9E75;background:#EAF3DE}
+.dns-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:1rem}
+.dns-card{border:1px solid #e5e5e3;border-radius:10px;padding:1rem}
+.dns-card.ok{border-left:3px solid #1D9E75}.dns-card.fail{border-left:3px solid #E24B4A}
+.dns-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.dns-value{font-family:monospace;font-size:11px;color:#888;word-break:break-all;line-height:1.5}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot-green{background:#1D9E75}.dot-red{background:#E24B4A}.dot-amber{background:#BA7517}
+.score-bar{height:8px;background:#f0f0ee;border-radius:4px;margin:1rem 0;overflow:hidden}
+.score-fill{height:100%;border-radius:4px;background:#1D9E75;transition:width .4s}
+.progress-bar{height:5px;background:#f0f0ee;border-radius:4px;overflow:hidden;margin-top:4px}
+.progress-fill{height:100%;border-radius:4px;background:#1D9E75}
+.progress-fill.amber{background:#BA7517}.progress-fill.red{background:#E24B4A}
+.form-row{display:grid;gap:8px;margin-bottom:10px}
+.form-label{font-size:11px;color:#888;font-weight:500;margin-bottom:3px;display:block}
+.alert{padding:.75rem 1rem;border-radius:8px;font-size:13px;margin-bottom:1rem}
+.alert-green{background:#EAF3DE;color:#3B6D11;border:1px solid #C0DD97}
+.alert-red{background:#FCEBEB;color:#A32D2D;border:1px solid #F7C1C1}
+.alert-amber{background:#FAEEDA;color:#854F0B;border:1px solid #FAC775}
+#toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:.75rem 1.2rem;border-radius:8px;font-size:13px;font-weight:500;z-index:999;display:none;max-width:340px}
+.separator{border:none;border-top:1px solid #e5e5e3;margin:1rem 0}
+
+.wizard-step{display:none}.wizard-step.active{display:block}
+.col-map-row{display:grid;grid-template-columns:1fr 24px 1fr;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #f0f0ee;font-size:13px}
+.col-map-row:last-child{border-bottom:none}
+.preview-table{width:100%;border-collapse:collapse;font-size:12px;overflow-x:auto}
+.preview-table th{background:#f5f5f3;padding:5px 8px;text-align:left;font-weight:500;border:1px solid #e5e5e3}
+.preview-table td{padding:5px 8px;border:1px solid #e5e5e3;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.group-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;margin:2px}
+.color-dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
+.group-card{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f0f0ee}
+.group-card:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">ColdMail<span>by Presencia</span></div>
+    </div>
+    <nav>
+      <div class="nav-item active" onclick="showPage('dashboard',this)">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" onclick="showPage('subscribers',this)">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M1 14c0-3 2-5 5-5h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M11 9l1.5 1.5L15 8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Suscriptores
+      </div>
+      <div class="nav-item" onclick="showPage('import',this)">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M8 1v9M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Importar
+      </div>
+      <div class="nav-item" onclick="showPage('groups',this)">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M1 12c0-2.5 2-4 4-4h6c2 0 4 1.5 4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M13 8c1.5.5 3 1.5 3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M3 8C1.5 8.5 0 9.5 0 11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Grupos
+      </div>
+      <div class="nav-item" onclick="showPage('smtp',this)">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 7l7 4 7-4" stroke="currentColor" stroke-width="1.3"/></svg>
+        Cuentas SMTP
+      </div>
+      <div class="nav-item" onclick="showPage('dns',this)">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 1.5C6 4 5 6 5 8s1 4 3 6.5M8 1.5C10 4 11 6 11 8s-1 4-3 6.5M1.5 8h13" stroke="currentColor" stroke-width="1.3"/></svg>
+        Verificar DNS
+      </div>
+      <div class="nav-item" onclick="showPage('send',this)">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M2 2l12 6-12 6V9.5l8-1.5-8-1.5V2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+        Enviar campaña
+      </div>
+      <div class="nav-item" onclick="showPage('warmup',this)">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M8 2C6 4 4 6 4 9a4 4 0 008 0c0-3-2-5-4-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 10c0 1.1.9 2 2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Warm-up
+      </div>
+      <div class="nav-item" onclick="showPage('templates',this)">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 12v2M12 12v2M4 14h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Plantillas
+      </div>
+      <div class="nav-item" onclick="showPage('scheduler',this)">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="9" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 6v3l2 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M5 2h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Programar
+      </div>
+      <div class="nav-item" onclick="showPage('tracking',this)">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M1 8s3-5 7-5 7 5 7 5-3 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3"/></svg>
+        Aperturas
+      </div>
+      <div class="nav-item" onclick="showPage('spamscore',this)">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 4v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="11.5" r=".75" fill="currentColor"/></svg>
+        Spam score
+      </div>
+      <div class="nav-item" onclick="showPage('seed',this)">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 7h6M5 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Test spam
+      </div>
+    </nav>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <h1>Dashboard</h1>
+      <div class="metrics" id="dash-metrics">
+        <div class="metric"><div class="metric-label">Suscriptores</div><div class="metric-value" id="m-total">—</div></div>
+        <div class="metric"><div class="metric-label">Pendientes</div><div class="metric-value amber" id="m-pending">—</div></div>
+        <div class="metric"><div class="metric-label">Enviados</div><div class="metric-value green" id="m-sent">—</div></div>
+        <div class="metric"><div class="metric-label">Rebotes / error</div><div class="metric-value red" id="m-bounced">—</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Cuentas SMTP — actividad hoy</div>
+        <table>
+          <thead><tr><th>Cuenta</th><th>Enviados hoy</th><th>Límite</th><th>Uso</th><th>Estado</th></tr></thead>
+          <tbody id="dash-smtp"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SUBSCRIBERS -->
+    <div id="page-subscribers" class="page">
+      <h1>Suscriptores</h1>
+      <div class="card">
+        <div class="card-title">Importar desde Excel / CSV</div>
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+          <div style="font-size:24px;margin-bottom:8px">📂</div>
+          <div style="font-weight:600;margin-bottom:4px">Haz clic o arrastra un archivo</div>
+          <div style="font-size:12px">Formatos: .xlsx, .xls, .csv — Columnas detectadas: email, nombre, empresa, sector</div>
+        </div>
+        <input type="file" id="file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="importFile(this)"/>
+        <div id="import-result"></div>
+      </div>
+      <div class="toolbar">
+        <input type="text" placeholder="Buscar email, empresa..." id="sub-search" style="flex:1;max-width:240px" oninput="loadSubscribers()"/>
+        <select id="sub-filter" onchange="loadSubscribers()">
+          <option value="">Todos los estados</option>
+          <option value="pending">Pendientes</option>
+          <option value="sent">Enviados</option>
+          <option value="error">Error / rebote</option>
+        </select>
+        <select id="sub-group-filter" onchange="loadSubscribers()">
+          <option value="">Todos los grupos</option>
+        </select>
+        <button class="btn btn-danger btn-sm" onclick="deleteBounced()">Limpiar rebotes</button>
+        <button class="btn btn-primary" onclick="showPage('import', document.querySelector('[onclick*=import]'))">+ Importar</button>
+      </div>
+      <div class="card" style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Email</th><th>Nombre</th><th>Empresa</th><th>Sector</th><th>Grupos</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="subs-body"></tbody>
+        </table>
+        <div id="subs-empty" style="text-align:center;padding:2rem;color:#888;display:none">No hay suscriptores. Importa un Excel para empezar.</div>
+      </div>
+    </div>
+
+    <!-- SMTP -->
+    <div id="page-smtp" class="page">
+      <h1>Cuentas SMTP</h1>
+      <div class="card">
+        <div class="card-title">Añadir cuenta de envío</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label class="form-label">Email de envío</label><input type="email" id="s-email" placeholder="outreach@midominio.com" style="width:100%"/></div>
+          <div><label class="form-label">Servidor SMTP</label><input type="text" id="s-host" placeholder="smtp.midominio.com" style="width:100%"/></div>
+          <div><label class="form-label">Usuario SMTP</label><input type="text" id="s-user" placeholder="usuario@midominio.com" style="width:100%"/></div>
+          <div><label class="form-label">Contraseña SMTP</label><input type="password" id="s-pass" placeholder="••••••••" style="width:100%"/></div>
+          <div><label class="form-label">Puerto</label><input type="number" id="s-port" value="587" style="width:100%"/></div>
+          <div><label class="form-label">Límite diario (emails/día)</label><input type="number" id="s-limit" value="50" style="width:100%"/></div>
+        </div>
+        <div style="margin-top:1rem">
+          <button class="btn btn-primary" onclick="addSmtp()">Añadir cuenta</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Cuentas configuradas</div>
+        <table>
+          <thead><tr><th>Email</th><th>Servidor</th><th>Puerto</th><th>Límite/día</th><th>Enviados hoy</th><th></th></tr></thead>
+          <tbody id="smtp-body"></tbody>
+        </table>
+        <div id="smtp-empty" style="text-align:center;padding:1.5rem;color:#888;display:none">No hay cuentas SMTP configuradas.</div>
+      </div>
+    </div>
+
+    <!-- DNS -->
+    <div id="page-dns" class="page">
+      <h1>Verificar DNS</h1>
+      <div class="card">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input type="text" id="dns-domain" placeholder="midominio.com" style="flex:1;max-width:300px"/>
+          <button class="btn btn-primary" onclick="checkDns()">Verificar ahora</button>
+        </div>
+        <div id="dns-result" style="margin-top:1rem"></div>
+      </div>
+    </div>
+
+    <!-- SEND -->
+    <div id="page-send" class="page">
+      <h1>Enviar campaña</h1>
+      <div id="send-plan" class="card" style="margin-bottom:1rem"></div>
+      <div class="card">
+        <div class="card-title">Configurar envío</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div><label class="form-label">Nombre del remitente</label><input type="text" id="from-name" value="Presencia" style="width:100%"/></div>
+          <div><label class="form-label">Emails a enviar hoy (0 = máximo disponible)</label><input type="number" id="daily-total" value="0" min="0" style="width:100%" oninput="updatePlanDisplay()"/></div>
+        </div>
+        <div style="margin-bottom:12px"><label class="form-label">Asunto</label><input type="text" id="email-subject" style="width:100%" placeholder="¿Tu taller cumple con el registro horario obligatorio?"/></div>
+        <div><label class="form-label">Cuerpo del email (HTML permitido) — usa {{nombre}}, {{empresa}} para personalizar</label>
+          <textarea id="email-body" placeholder="Hola {{nombre}},&#10;&#10;Desde 2019 es obligatorio registrar la jornada..."></textarea>
+        </div>
+        <div style="margin-top:1rem;display:flex;gap:8px;align-items:center">
+          <button class="btn btn-success" onclick="sendCampaign()">Iniciar envío</button>
+          <span style="font-size:12px;color:#888">Los emails se envían en background. Puedes cerrar esta pantalla.</span>
+        </div>
+        <div id="send-result" style="margin-top:1rem"></div>
+      </div>
+    </div>
+
+
+
+    <!-- GROUPS -->
+    <div id="page-groups" class="page">
+      <h1>Grupos / Segmentos</h1>
+      <div style="display:grid;grid-template-columns:280px 1fr;gap:1rem;align-items:start">
+        <!-- Left: group list -->
+        <div>
+          <div class="card">
+            <div class="card-title">Crear grupo</div>
+            <div style="margin-bottom:8px"><label class="form-label">Nombre</label><input type="text" id="grp-name" placeholder="Ej: Talleres Madrid" style="width:100%"/></div>
+            <div style="margin-bottom:12px"><label class="form-label">Color</label>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px" id="color-picker">
+                <span class="color-dot" style="background:#6366f1;width:20px;height:20px;cursor:pointer;border-radius:50%;border:2px solid transparent" onclick="selectColor('#6366f1',this)"></span>
+                <span class="color-dot" style="background:#1D9E75;width:20px;height:20px;cursor:pointer;border-radius:50%;border:2px solid transparent" onclick="selectColor('#1D9E75',this)"></span>
+                <span class="color-dot" style="background:#E24B4A;width:20px;height:20px;cursor:pointer;border-radius:50%;border:2px solid transparent" onclick="selectColor('#E24B4A',this)"></span>
+                <span class="color-dot" style="background:#BA7517;width:20px;height:20px;cursor:pointer;border-radius:50%;border:2px solid transparent" onclick="selectColor('#BA7517',this)"></span>
+                <span class="color-dot" style="background:#185FA5;width:20px;height:20px;cursor:pointer;border-radius:50%;border:2px solid transparent" onclick="selectColor('#185FA5',this)"></span>
+                <span class="color-dot" style="background:#888;width:20px;height:20px;cursor:pointer;border-radius:50%;border:2px solid transparent" onclick="selectColor('#888',this)"></span>
+              </div>
+              <input type="hidden" id="grp-color" value="#6366f1"/>
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="createGroup()">Crear grupo</button>
+          </div>
+          <div class="card" style="margin-top:1rem">
+            <div class="card-title">Mis grupos</div>
+            <div id="groups-list"><div style="color:#888;font-size:13px;text-align:center;padding:1rem">Sin grupos todavía</div></div>
+          </div>
+        </div>
+        <!-- Right: subscribers in selected group -->
+        <div>
+          <div class="card" id="group-detail-card" style="display:none">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
+              <span class="color-dot" id="gd-dot" style="width:12px;height:12px"></span>
+              <div style="font-size:16px;font-weight:600" id="gd-name"></div>
+              <span style="font-size:13px;color:#888" id="gd-count"></span>
+              <div style="flex:1"></div>
+              <button class="btn btn-outline btn-sm" onclick="showPage('subscribers', document.querySelector('.nav-item:nth-child(2)'))">Ver en lista</button>
+              <button class="btn btn-danger" onclick="deleteGroup(activeGroupId)">Eliminar grupo</button>
+            </div>
+            <div class="toolbar">
+              <input type="text" placeholder="Buscar y añadir suscriptor..." id="grp-sub-search" style="flex:1;max-width:280px" oninput="searchSubsForGroup()"/>
+              <button class="btn btn-outline btn-sm" onclick="selectAllVisible()">Seleccionar todos</button>
+              <button class="btn btn-primary btn-sm" onclick="assignSelectedToGroup()">Añadir seleccionados</button>
+            </div>
+            <div id="grp-sub-results" style="margin-bottom:1rem;max-height:200px;overflow-y:auto;border:1px solid #e5e5e3;border-radius:8px;display:none"></div>
+            <div class="card-title" style="margin-top:1rem">Suscriptores en este grupo (<span id="gd-sub-count">0</span>)</div>
+            <div style="max-height:400px;overflow-y:auto">
+              <table><thead><tr><th></th><th>Email</th><th>Nombre</th><th>Empresa</th><th>Sector</th><th></th></tr></thead>
+              <tbody id="gd-subs"></tbody></table>
+            </div>
+          </div>
+          <div id="group-placeholder" class="card" style="text-align:center;padding:3rem;color:#888">
+            <div style="font-size:32px;margin-bottom:8px">👈</div>
+            Selecciona un grupo para ver y gestionar sus suscriptores
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMPORT WIZARD -->
+    <div id="page-import" class="page">
+      <h1>Importar suscriptores</h1>
+
+      <!-- Step 1: Upload -->
+      <div id="wizard-step-1" class="wizard-step active">
+        <div class="card">
+          <div class="card-title">Paso 1 — Sube el archivo</div>
+          <div class="upload-zone" id="wiz-upload-zone" onclick="document.getElementById('wiz-file').click()">
+            <div style="font-size:28px;margin-bottom:8px">📂</div>
+            <div style="font-weight:600;margin-bottom:4px">Haz clic o arrastra tu Excel / CSV</div>
+            <div style="font-size:12px;color:#888">Formatos: .xlsx, .xls, .csv</div>
+          </div>
+          <input type="file" id="wiz-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="wizPreview(this)"/>
+          <div id="wiz-step1-error"></div>
+        </div>
+      </div>
+
+      <!-- Step 2: Map columns -->
+      <div id="wizard-step-2" class="wizard-step">
+        <div class="card" style="margin-bottom:1rem">
+          <div class="card-title">Paso 2 — Asigna las columnas</div>
+          <p style="font-size:13px;color:#888;margin-bottom:1rem">Tu archivo tiene <strong id="wiz-total-rows">0</strong> filas. Indica qué columna corresponde a cada campo.</p>
+          <div id="wiz-mapping-rows"></div>
+        </div>
+        <div class="card" style="margin-bottom:1rem">
+          <div class="card-title">Vista previa (primeras 5 filas)</div>
+          <div style="overflow-x:auto"><table class="preview-table" id="wiz-preview-table"></table></div>
+        </div>
+        <div class="card" style="margin-bottom:1rem">
+          <div class="card-title">Asignar a grupo (opcional)</div>
+          <div id="wiz-groups-select" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+            <input type="text" id="wiz-new-group" placeholder="O crea un grupo nuevo..." style="max-width:240px"/>
+            <button class="btn btn-outline btn-sm" onclick="wizCreateGroup()">Crear y asignar</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline" onclick="wizGoTo(1)">← Atrás</button>
+          <button class="btn btn-primary" onclick="wizImport()">Importar ahora</button>
+        </div>
+        <div id="wiz-import-result" style="margin-top:1rem"></div>
+      </div>
+    </div>
+
+    <!-- TEMPLATES -->
+    <div id="page-templates" class="page">
+      <h1>Plantillas de email</h1>
+
+      <!-- Logo config -->
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-title">Logo global</div>
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+          <div id="logo-preview-wrap" style="display:none">
+            <img id="logo-preview-img" style="height:40px;border:1px solid #eee;border-radius:6px;padding:4px" alt="logo"/>
+          </div>
+          <div>
+            <label class="form-label">Subir imagen</label>
+            <input type="file" id="logo-file" accept="image/*" onchange="uploadLogo(this)" style="font-size:13px"/>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <label class="form-label">O pegar URL</label>
+            <div style="display:flex;gap:8px">
+              <input type="text" id="logo-url-input" placeholder="https://tuempresa.com/logo.png" style="flex:1"/>
+              <button class="btn btn-outline btn-sm" onclick="setLogoUrl()">Aplicar</button>
+            </div>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="clearLogo()">Quitar logo</button>
+        </div>
+      </div>
+
+      <!-- Template grid -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px" id="templates-grid"></div>
+
+      <!-- Template editor modal (inline) -->
+      <div id="tpl-editor" style="display:none;margin-top:1.5rem">
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
+            <div style="font-size:16px;font-weight:600" id="tpl-editor-title">Editar plantilla</div>
+            <div style="flex:1"></div>
+            <button class="btn btn-danger btn-sm" onclick="closeTplEditor()">Cerrar</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+            <!-- Left: variables -->
+            <div>
+              <div class="card-title" style="margin-bottom:12px">Personalizar</div>
+              <div id="tpl-vars-form"></div>
+              <div style="margin-top:1rem;display:flex;gap:8px">
+                <button class="btn btn-primary" onclick="saveTplChanges()">Guardar cambios</button>
+                <button class="btn btn-success" onclick="useTplInCampaign()">Usar en campaña →</button>
+              </div>
+            </div>
+            <!-- Right: preview -->
+            <div>
+              <div class="card-title" style="margin-bottom:12px">Vista previa</div>
+              <div style="border:1px solid #e5e5e3;border-radius:8px;overflow:hidden;height:500px">
+                <iframe id="tpl-preview-frame" style="width:100%;height:100%;border:none"></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Template comparison (appears after campaigns exist) -->
+      <div id="tpl-comparison" style="margin-top:1.5rem;display:none">
+        <div class="card">
+          <div class="card-title">Comparativa de rendimiento por plantilla</div>
+          <div id="tpl-stats-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCHEDULER -->
+    <div id="page-scheduler" class="page">
+      <h1>Programar envíos</h1>
+
+      <div style="display:grid;grid-template-columns:380px 1fr;gap:1rem;align-items:start">
+        <!-- Create form -->
+        <div class="card">
+          <div class="card-title">Nueva campaña programada</div>
+
+          <label class="form-label">Nombre de la campaña</label>
+          <input type="text" id="sch-name" placeholder="Campaña talleres — Semana 1" style="width:100%;margin-bottom:10px"/>
+
+          <label class="form-label">Asunto del email</label>
+          <input type="text" id="sch-subject" placeholder="¿Tu empresa cumple con el registro horario?" style="width:100%;margin-bottom:10px"/>
+
+          <label class="form-label">Nombre del remitente</label>
+          <input type="text" id="sch-from" value="Presencia" style="width:100%;margin-bottom:10px"/>
+
+          <label class="form-label">Plantilla</label>
+          <select id="sch-template" style="width:100%;margin-bottom:10px" onchange="previewSchTemplate()"></select>
+
+          <label class="form-label">Audiencia destinataria</label>
+          <div style="background:#f5f5f3;border-radius:8px;padding:12px;margin-bottom:10px">
+
+            <div style="margin-bottom:8px">
+              <label class="form-label" style="margin-bottom:4px">Por grupo</label>
+              <select id="sch-group" style="width:100%" onchange="updateAudiencePreview()">
+                <option value="">Sin filtro de grupo</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom:8px">
+              <label class="form-label" style="margin-bottom:4px">Por sector <span style="font-weight:400;color:#aaa">(selección múltiple)</span></label>
+              <div id="sch-sectors-list" style="display:flex;flex-wrap:wrap;gap:6px;min-height:28px">
+                <span style="font-size:12px;color:#aaa">Cargando sectores...</span>
+              </div>
+            </div>
+
+            <div id="sch-audience-preview" style="margin-top:8px;padding:8px;background:#fff;border-radius:6px;border:1px solid #e5e5e3;font-size:12px;display:none">
+              <span id="sch-audience-count" style="font-weight:600;color:#1D9E75"></span>
+              <span style="color:#888"> suscriptores pendientes coinciden</span>
+              <div id="sch-audience-sample" style="margin-top:4px;color:#888"></div>
+            </div>
+          </div>
+
+          <label class="form-label">Fecha y hora de envío</label>
+          <input type="datetime-local" id="sch-datetime" style="width:100%;margin-bottom:10px"/>
+
+          <label class="form-label">Repetición</label>
+          <select id="sch-repeat" style="width:100%;margin-bottom:10px">
+            <option value="">Sin repetición (envío único)</option>
+            <option value="daily">Diaria</option>
+            <option value="weekly">Semanal</option>
+          </select>
+
+          <div style="background:#f5f5f3;border-radius:8px;padding:12px;margin-bottom:12px">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:500;margin-bottom:8px">
+              <input type="checkbox" id="sch-ramp" onchange="toggleRamp()"/>
+              Ramp-up automático (incremento gradual de volumen)
+            </label>
+            <div id="sch-ramp-config" style="display:none">
+              <div style="font-size:12px;color:#888;margin-bottom:6px">Emails por día (sep. por comas):</div>
+              <input type="text" id="sch-ramp-values" value="20,30,50,80,120,180,250" style="width:100%;font-size:12px"/>
+              <div style="font-size:11px;color:#aaa;margin-top:4px">Día 1→20, Día 2→30, Día 3→50... hasta el último valor se repite</div>
+            </div>
+          </div>
+
+          <div id="sch-tpl-mini-preview" style="margin-bottom:12px;display:none">
+            <div style="font-size:11px;color:#888;margin-bottom:4px">Vista previa plantilla:</div>
+            <div style="border:1px solid #e5e5e3;border-radius:6px;overflow:hidden;height:120px">
+              <iframe id="sch-mini-frame" style="width:100%;height:200px;border:none;transform:scale(0.6);transform-origin:top left;pointer-events:none"></iframe>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" style="width:100%" onclick="createScheduledCampaign()">Programar campaña</button>
+          <div id="sch-result" style="margin-top:.75rem"></div>
+        </div>
+
+        <!-- List of scheduled campaigns -->
+        <div>
+          <div class="card">
+            <div class="card-title">Campañas programadas</div>
+            <div id="sch-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPAM SCORE -->
+    <div id="page-spamscore" class="page">
+      <h1>Analizador de spam score</h1>
+      <div style="display:grid;grid-template-columns:1fr 360px;gap:1rem;align-items:start">
+
+        <!-- Left: input -->
+        <div>
+          <div class="card" style="margin-bottom:1rem">
+            <div style="margin-bottom:10px">
+              <label class="form-label">Asunto del email</label>
+              <input type="text" id="ss-subject" style="width:100%" placeholder="¿Tu taller cumple con el registro horario obligatorio?" oninput="ssLiveAnalyze()"/>
+            </div>
+            <div style="margin-bottom:10px">
+              <label class="form-label">Cuerpo (HTML o texto plano)</label>
+              <textarea id="ss-body" style="min-height:200px;width:100%" placeholder="Hola {{nombre}},&#10;&#10;Desde 2019 es obligatorio registrar la jornada..." oninput="ssLiveAnalyze()"></textarea>
+            </div>
+            <div style="display:flex;gap:8px;align-items:flex-end">
+              <div style="flex:1"><label class="form-label">Dominio remitente (opcional — verifica SPF/DMARC)</label>
+              <input type="text" id="ss-domain" placeholder="presencia-app.com" style="width:100%" oninput="ssLiveAnalyze()"/></div>
+              <button class="btn btn-primary" onclick="analyzeSpam()">Analizar</button>
+            </div>
+          </div>
+          <!-- Paste from campaign shortcut -->
+          <div class="card">
+            <div class="card-title">O importa desde una campaña guardada</div>
+            <select id="ss-campaign-pick" style="width:100%;max-width:320px" onchange="loadCampaignIntoScorer()">
+              <option value="">Selecciona campaña...</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Right: result panel -->
+        <div id="ss-result-panel" style="display:none">
+          <!-- Score gauge -->
+          <div class="card" style="margin-bottom:1rem;text-align:center">
+            <div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Spam Score</div>
+            <div id="ss-score-num" style="font-size:56px;font-weight:700;line-height:1"></div>
+            <div id="ss-rating" style="font-size:14px;font-weight:500;margin:4px 0 12px"></div>
+            <div style="background:#f0f0ee;border-radius:8px;height:12px;overflow:hidden;margin-bottom:8px">
+              <div id="ss-bar" style="height:100%;border-radius:8px;transition:width .4s,background .4s"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:#888">
+              <span>0 Excelente</span><span>15 Bueno</span><span>30 Aceptable</span><span>50+ Peligroso</span>
+            </div>
+          </div>
+
+          <!-- Quick stats -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem">
+            <div class="metric" style="padding:.75rem;text-align:center"><div class="metric-label">Palabras</div><div style="font-size:18px;font-weight:600" id="ss-words">—</div></div>
+            <div class="metric" style="padding:.75rem;text-align:center"><div class="metric-label">Enlaces</div><div style="font-size:18px;font-weight:600" id="ss-links">—</div></div>
+          </div>
+
+          <!-- DNS -->
+          <div class="card" id="ss-dns-card" style="margin-bottom:1rem;display:none">
+            <div class="card-title">DNS del dominio</div>
+            <div id="ss-dns-result"></div>
+          </div>
+
+          <!-- Issues -->
+          <div class="card" style="margin-bottom:1rem" id="ss-issues-card">
+            <div class="card-title">Problemas detectados</div>
+            <div id="ss-issues-list"></div>
+          </div>
+
+          <!-- Good practices -->
+          <div class="card" id="ss-good-card">
+            <div class="card-title" style="color:#1D9E75">✓ Buenas prácticas detectadas</div>
+            <div id="ss-good-list"></div>
+          </div>
+        </div>
+
+        <!-- Placeholder when no analysis yet -->
+        <div id="ss-placeholder" class="card" style="text-align:center;padding:3rem;color:#888">
+          <div style="font-size:36px;margin-bottom:8px">🛡️</div>
+          <div style="font-weight:500;margin-bottom:4px">Escribe tu email y analiza</div>
+          <div style="font-size:12px">El análisis se actualiza en tiempo real mientras escribes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WARMUP -->
+    <div id="page-warmup" class="page">
+      <h1>Warm-up automático</h1>
+
+      <!-- Global config card -->
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-title">Configuración del scheduler</div>
+        <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:500">
+            <input type="checkbox" id="wu-enabled" onchange="saveWarmupConfig()" style="width:16px;height:16px"/>
+            Warm-up automático activado
+          </label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:13px;color:#888">Ejecutar cada día a las</span>
+            <input type="number" id="wu-hour" min="0" max="23" value="8" style="width:60px" onchange="saveWarmupConfig()"/>
+            <span style="color:#888">:</span>
+            <input type="number" id="wu-minute" min="0" max="59" value="0" style="width:60px" onchange="saveWarmupConfig()"/>
+            <span style="font-size:12px;color:#888">(hora Madrid)</span>
+          </div>
+          <button class="btn btn-success" onclick="runWarmupNow()">▶ Ejecutar ahora</button>
+        </div>
+        <div id="wu-run-result" style="margin-top:.75rem"></div>
+      </div>
+
+      <!-- SMTP accounts warmup status -->
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-title">Estado por cuenta SMTP</div>
+        <div id="wu-accounts-list"><div style="color:#888;text-align:center;padding:1.5rem;font-size:13px">Cargando...</div></div>
+      </div>
+
+      <!-- External seed mailboxes -->
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-title">Buzones externos (Gmail, Outlook...)</div>
+        <p style="font-size:13px;color:#888;margin-bottom:1rem">Añade buzones que controles. La app les enviará emails de warm-up y los marcará como leídos automáticamente vía IMAP.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 80px 1fr 100px;gap:8px;align-items:end;margin-bottom:1rem">
+          <div><label class="form-label">Email</label><input type="email" id="wu-ext-email" placeholder="tubuzon@gmail.com" style="width:100%"/></div>
+          <div><label class="form-label">Servidor IMAP</label><input type="text" id="wu-ext-imap" placeholder="imap.gmail.com" style="width:100%"/></div>
+          <div><label class="form-label">Puerto</label><input type="number" id="wu-ext-port" value="993" style="width:100%"/></div>
+          <div><label class="form-label">Contraseña IMAP / App password</label><input type="password" id="wu-ext-pass" placeholder="••••••••" style="width:100%"/></div>
+          <div><button class="btn btn-primary" onclick="addWarmupAccount()" style="width:100%">Añadir</button></div>
+        </div>
+        <div id="wu-ext-list"></div>
+      </div>
+
+      <!-- Log -->
+      <div class="card">
+        <div class="card-title">Historial de ejecuciones</div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Fecha</th><th>Cuenta</th><th>Día #</th><th>Objetivo</th><th>Enviados</th><th>Errores</th></tr></thead>
+            <tbody id="wu-log-body"></tbody>
+          </table>
+        </div>
+        <div id="wu-log-empty" style="text-align:center;padding:1.5rem;color:#888;display:none">Sin ejecuciones todavía. Activa el warm-up y haz clic en "Ejecutar ahora".</div>
+      </div>
+    </div>
+
+    <!-- TRACKING -->
+    <div id="page-tracking" class="page">
+      <h1>Aperturas por campaña</h1>
+      <div id="tracking-list"></div>
+    </div>
+
+    <!-- SEED TEST -->
+    <div id="page-seed" class="page">
+      <h1>Test de spam</h1>
+      <div class="alert alert-amber" style="margin-bottom:1rem">Envía un email de prueba a buzones que controles (Gmail, Outlook...) y marca manualmente si llegó a bandeja de entrada o a spam.</div>
+      <div class="card">
+        <div class="card-title">Nuevo test</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div>
+            <label class="form-label">Emails semilla (uno por línea)</label>
+            <textarea id="seed-emails" style="min-height:80px" placeholder="tutest@gmail.com&#10;tutest@outlook.com"></textarea>
+          </div>
+          <div>
+            <label class="form-label">Cuenta SMTP a usar</label>
+            <select id="seed-smtp" style="width:100%"></select>
+            <label class="form-label" style="margin-top:8px">Asunto del test</label>
+            <input type="text" id="seed-subject" style="width:100%" placeholder="Test de entregabilidad — {{fecha}}"/>
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <label class="form-label">Cuerpo (pega el mismo HTML de tu campaña)</label>
+          <textarea id="seed-body" style="min-height:100px" placeholder="<p>Hola, este es un test...</p>"></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="sendSeedTest()">Enviar test</button>
+        <div id="seed-result" style="margin-top:.75rem"></div>
+      </div>
+      <div class="card" style="margin-top:1rem">
+        <div class="card-title">Historial de tests</div>
+        <table>
+          <thead><tr><th>Email</th><th>Cuenta usada</th><th>Enviado</th><th>¿Llegó a?</th><th>Notas</th><th></th></tr></thead>
+          <tbody id="seed-body-table"></tbody>
+        </table>
+        <div id="seed-empty" style="text-align:center;padding:1.5rem;color:#888;display:none">Sin tests enviados todavía.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API = '';
+
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  el.classList.add('active');
+  if (id === 'dashboard') loadDashboard();
+  if (id === 'subscribers') loadSubscribers();
+  if (id === 'smtp') loadSmtp();
+  if (id === 'send') loadSendPlan();
+  if (id === 'tracking') loadTracking();
+  if (id === 'seed') loadSeedPage();
+  if (id === 'groups') loadGroups();
+  if (id === 'import') wizInit();
+  if (id === 'warmup') loadWarmup();
+  if (id === 'spamscore') initSpamScorer();
+  if (id === 'templates') loadTemplates();
+  if (id === 'scheduler') loadScheduler();
+}
+
+function toast(msg, type = 'green') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  t.style.background = type === 'green' ? '#EAF3DE' : type === 'red' ? '#FCEBEB' : '#FAEEDA';
+  t.style.color = type === 'green' ? '#3B6D11' : type === 'red' ? '#A32D2D' : '#854F0B';
+  t.style.border = '1px solid ' + (type === 'green' ? '#C0DD97' : type === 'red' ? '#F7C1C1' : '#FAC775');
+  setTimeout(() => t.style.display = 'none', 4000);
+}
+
+function statusBadge(s) {
+  const map = { pending: ['badge-gray','Pendiente'], sent: ['badge-green','Enviado'], error: ['badge-red','Error'], bounced: ['badge-red','Rebote'] };
+  const [cls, label] = map[s] || ['badge-gray', s];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+// Dashboard
+async function loadDashboard() {
+  const [stats, smtpList] = await Promise.all([
+    fetch(API + '/api/subscribers/stats').then(r => r.json()),
+    fetch(API + '/api/smtp').then(r => r.json())
+  ]);
+  document.getElementById('m-total').textContent = stats.total.toLocaleString('es');
+  document.getElementById('m-pending').textContent = stats.pending.toLocaleString('es');
+  document.getElementById('m-sent').textContent = stats.sent.toLocaleString('es');
+  document.getElementById('m-bounced').textContent = (stats.bounced).toLocaleString('es');
+
+  document.getElementById('dash-smtp').innerHTML = smtpList.map(a => {
+    const pct = Math.round((a.sent_today / a.daily_limit) * 100);
+    const cls = pct >= 90 ? 'red' : pct >= 70 ? 'amber' : '';
+    return `<tr>
+      <td>${a.email}</td>
+      <td>${a.sent_today}</td>
+      <td>${a.daily_limit}</td>
+      <td style="min-width:100px"><div class="progress-bar"><div class="progress-fill ${cls}" style="width:${Math.min(pct,100)}%"></div></div><div style="font-size:11px;color:#888;margin-top:2px">${pct}%</div></td>
+      <td>${pct >= 90 ? '<span class="badge badge-amber">Al límite</span>' : '<span class="badge badge-green">Disponible</span>'}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" style="color:#888;text-align:center;padding:1rem">Sin cuentas SMTP configuradas</td></tr>';
+}
+
+// Subscribers
+async function loadSubscribers() {
+  const search = document.getElementById('sub-search').value;
+  const status = document.getElementById('sub-filter').value;
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  if (status) params.set('status', status);
+  const data = await fetch(API + '/api/subscribers?' + params).then(r => r.json());
+  const body = document.getElementById('subs-body');
+  const empty = document.getElementById('subs-empty');
+  if (!data.length) { body.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  body.innerHTML = data.map(s => `<tr>
+    <td>${s.email}</td>
+    <td>${s.name || '—'}</td>
+    <td>${s.company || '—'}</td>
+    <td>${s.sector || '—'}</td>
+    <td>${statusBadge(s.status)}</td>
+    <td><button class="btn btn-danger" onclick="deleteSub(${s.id})">Eliminar</button></td>
+  </tr>`).join('');
+}
+
+async function deleteSub(id) {
+  await fetch(API + '/api/subscribers/' + id, { method: 'DELETE' });
+  loadSubscribers();
+}
+
+async function deleteBounced() {
+  if (!confirm('¿Eliminar todos los suscriptores con error/rebote?')) return;
+  const r = await fetch(API + '/api/subscribers/bulk/bounced', { method: 'DELETE' }).then(r => r.json());
+  toast(`Eliminados ${r.deleted} registros`);
+  loadSubscribers();
+}
+
+async function importFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const formData = new FormData();
+  formData.append('file', file);
+  document.getElementById('import-result').innerHTML = '<div class="alert alert-amber">Importando...</div>';
+  try {
+    const r = await fetch(API + '/api/subscribers/import', { method: 'POST', body: formData }).then(r => r.json());
+    if (r.error) throw new Error(r.error);
+    document.getElementById('import-result').innerHTML = `<div class="alert alert-green">✓ Importados: <strong>${r.imported}</strong> | Duplicados/inválidos: ${r.skipped} | Total en archivo: ${r.total}</div>`;
+    loadSubscribers();
+  } catch (e) {
+    document.getElementById('import-result').innerHTML = `<div class="alert alert-red">Error: ${e.message}</div>`;
+  }
+  input.value = '';
+}
+
+const uploadZone = document.getElementById('upload-zone');
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault(); uploadZone.classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) { const dt = new DataTransfer(); dt.items.add(file); const inp = document.getElementById('file-input'); inp.files = dt.files; importFile(inp); }
+});
+
+// SMTP
+async function loadSmtp() {
+  const data = await fetch(API + '/api/smtp').then(r => r.json());
+  const body = document.getElementById('smtp-body');
+  const empty = document.getElementById('smtp-empty');
+  if (!data.length) { body.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  body.innerHTML = data.map(a => `<tr>
+    <td>${a.email}</td>
+    <td style="color:#888;font-size:12px">${a.smtp_host}</td>
+    <td>${a.smtp_port}</td>
+    <td><input type="number" value="${a.daily_limit}" min="1" style="width:70px" onchange="updateLimit(${a.id}, this.value)"/></td>
+    <td>${a.sent_today}</td>
+    <td style="display:flex;gap:6px">
+      <button class="btn btn-outline btn-sm" onclick="testSmtp(${a.id})">Probar</button>
+      <button class="btn btn-danger" onclick="deleteSmtp(${a.id})">Eliminar</button>
+    </td>
+  </tr>`).join('');
+}
+
+async function addSmtp() {
+  const body = {
+    email: document.getElementById('s-email').value.trim(),
+    smtp_host: document.getElementById('s-host').value.trim(),
+    smtp_user: document.getElementById('s-user').value.trim(),
+    smtp_pass: document.getElementById('s-pass').value,
+    smtp_port: +document.getElementById('s-port').value,
+    daily_limit: +document.getElementById('s-limit').value
+  };
+  if (!body.email || !body.smtp_host || !body.smtp_user || !body.smtp_pass) { toast('Rellena todos los campos obligatorios', 'red'); return; }
+  const r = await fetch(API + '/api/smtp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json());
+  if (r.error) { toast(r.error, 'red'); return; }
+  toast('Cuenta añadida correctamente');
+  ['s-email','s-host','s-user','s-pass'].forEach(id => document.getElementById(id).value = '');
+  loadSmtp();
+}
+
+async function updateLimit(id, val) {
+  await fetch(API + '/api/smtp/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ daily_limit: +val }) });
+  toast('Límite actualizado');
+}
+
+async function deleteSmtp(id) {
+  if (!confirm('¿Eliminar esta cuenta?')) return;
+  await fetch(API + '/api/smtp/' + id, { method: 'DELETE' });
+  loadSmtp();
+}
+
+async function testSmtp(id) {
+  toast('Probando conexión...', 'amber');
+  const r = await fetch(API + '/api/smtp/' + id + '/test', { method: 'POST' }).then(r => r.json());
+  toast(r.ok ? '✓ Conexión SMTP correcta' : '✗ Error: ' + r.error, r.ok ? 'green' : 'red');
+}
+
+// DNS
+async function checkDns() {
+  const domain = document.getElementById('dns-domain').value.trim();
+  if (!domain) { toast('Introduce un dominio', 'amber'); return; }
+  document.getElementById('dns-result').innerHTML = '<div class="alert alert-amber">Consultando registros DNS...</div>';
+  try {
+    const r = await fetch(API + '/api/dns/' + domain).then(res => res.json());
+    if (r.error) throw new Error(r.error);
+    const scoreColor = r.score === 4 ? '#1D9E75' : r.score >= 2 ? '#BA7517' : '#E24B4A';
+    document.getElementById('dns-result').innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem">
+        <div style="font-size:22px;font-weight:700;color:${scoreColor}">${r.score}/${r.maxScore}</div>
+        <div style="flex:1"><div class="score-bar"><div class="score-fill" style="width:${r.score/r.maxScore*100}%;background:${scoreColor}"></div></div>
+        <div style="font-size:12px;color:#888;margin-top:4px">${r.recommendation}</div></div>
+      </div>
+      <div class="dns-grid">
+        ${renderDnsCard('SPF', r.spf)}
+        ${renderDnsCard('DKIM', r.dkim, r.dkim.selector ? `Selector: ${r.dkim.selector}` : '')}
+        ${renderDnsCard('DMARC', r.dmarc)}
+        ${renderDnsCard('MX', r.mx)}
+      </div>`;
+  } catch (e) {
+    document.getElementById('dns-result').innerHTML = `<div class="alert alert-red">Error: ${e.message}</div>`;
+  }
+}
+
+function renderDnsCard(type, data, extra = '') {
+  return `<div class="dns-card ${data.ok ? 'ok' : 'fail'}">
+    <div class="dns-title"><span class="dot ${data.ok ? 'dot-green' : 'dot-red'}"></span>${type} — ${data.ok ? '<span style="color:#1D9E75">Configurado</span>' : '<span style="color:#E24B4A">No encontrado</span>'}</div>
+    ${extra ? `<div style="font-size:11px;color:#888;margin-bottom:4px">${extra}</div>` : ''}
+    <div class="dns-value">${data.value || '— registro no encontrado —'}</div>
+  </div>`;
+}
+
+// Send
+async function loadSendPlan() {
+  const r = await fetch(API + '/api/send/plan').then(res => res.json());
+  const el = document.getElementById('send-plan');
+  el.innerHTML = `<div class="card-title">Capacidad disponible hoy</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1rem">
+      <div class="metric" style="padding:.75rem"><div class="metric-label">Pendientes</div><div class="metric-value amber" style="font-size:20px">${r.pending.toLocaleString('es')}</div></div>
+      <div class="metric" style="padding:.75rem"><div class="metric-label">Capacidad hoy</div><div class="metric-value green" style="font-size:20px">${r.totalCapacity}</div></div>
+      <div class="metric" style="padding:.75rem"><div class="metric-label">Cuentas activas</div><div class="metric-value" style="font-size:20px">${r.accounts.length}</div></div>
+    </div>
+    ${r.accounts.map(a => {
+      const avail = a.daily_limit - a.sent_today;
+      const pct = Math.round((a.sent_today / a.daily_limit) * 100);
+      return `<div style="display:flex;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid #f0f0ee;font-size:13px">
+        <span style="flex:1">${a.email}</span>
+        <span style="color:#888">${avail} disponibles</span>
+        <div style="width:100px"><div class="progress-bar"><div class="progress-fill ${pct>=90?'red':pct>=70?'amber':''}" style="width:${Math.min(pct,100)}%"></div></div></div>
+      </div>`;
+    }).join('')}`;
+}
+
+async function sendCampaign() {
+  const subject = document.getElementById('email-subject').value.trim();
+  const body_html = document.getElementById('email-body').value.trim();
+  const from_name = document.getElementById('from-name').value.trim();
+  const daily_total = +document.getElementById('daily-total').value;
+  if (!subject || !body_html) { toast('Completa el asunto y el cuerpo del email', 'red'); return; }
+  if (!confirm(`¿Iniciar envío de campaña?\nAsunto: "${subject}"`)) return;
+  document.getElementById('send-result').innerHTML = '<div class="alert alert-amber">Iniciando envío...</div>';
+  try {
+    const r = await fetch(API + '/api/send/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subject, body_html, from_name, daily_total: daily_total || undefined })
+    }).then(res => res.json());
+    if (r.error) throw new Error(r.error);
+    document.getElementById('send-result').innerHTML = `<div class="alert alert-green">✓ ${r.message}</div>`;
+    loadSendPlan();
+  } catch (e) {
+    document.getElementById('send-result').innerHTML = `<div class="alert alert-red">Error: ${e.message}</div>`;
+  }
+}
+
+
+
+
+
+// ======== SPAM SCORE ========
+let ssDebounce = null;
+
+async function initSpamScorer() {
+  // Load campaigns into picker
+  const campaigns = await fetch(API + '/api/send/campaigns').then(r => r.json()).catch(() => []);
+  const sel = document.getElementById('ss-campaign-pick');
+  sel.innerHTML = '<option value="">Selecciona campaña...</option>' +
+    campaigns.map(c => `<option value="${c.id}" data-subject="${encodeURIComponent(c.subject)}" data-body="${encodeURIComponent(c.body_html || '')}">${c.name} — ${c.subject.substring(0,40)}</option>`).join('');
+}
+
+function loadCampaignIntoScorer() {
+  const sel = document.getElementById('ss-campaign-pick');
+  const opt = sel.options[sel.selectedIndex];
+  if (!opt.value) return;
+  document.getElementById('ss-subject').value = decodeURIComponent(opt.dataset.subject || '');
+  document.getElementById('ss-body').value = decodeURIComponent(opt.dataset.body || '');
+  analyzeSpam();
+}
+
+function ssLiveAnalyze() {
+  clearTimeout(ssDebounce);
+  ssDebounce = setTimeout(analyzeSpam, 600);
+}
+
+async function analyzeSpam() {
+  const subject = document.getElementById('ss-subject').value.trim();
+  const body = document.getElementById('ss-body').value.trim();
+  const domain = document.getElementById('ss-domain').value.trim();
+  if (!subject && !body) return;
+
+  const r = await fetch(API + '/api/spamscore/analyze', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subject, body, domain: domain || undefined })
+  }).then(x => x.json());
+
+  document.getElementById('ss-placeholder').style.display = 'none';
+  document.getElementById('ss-result-panel').style.display = 'block';
+
+  // Score
+  const score = r.score;
+  const color = r.color;
+  document.getElementById('ss-score-num').textContent = score;
+  document.getElementById('ss-score-num').style.color = color;
+  document.getElementById('ss-rating').textContent = r.rating;
+  document.getElementById('ss-rating').style.color = color;
+  document.getElementById('ss-bar').style.width = Math.min(score * 2, 100) + '%';
+  document.getElementById('ss-bar').style.background = color;
+
+  // Stats
+  document.getElementById('ss-words').textContent = r.wordCount;
+  document.getElementById('ss-links').textContent = r.linkCount;
+
+  // DNS
+  const dnsCard = document.getElementById('ss-dns-card');
+  if (r.dnsCheck) {
+    dnsCard.style.display = 'block';
+    document.getElementById('ss-dns-result').innerHTML = `
+      <div style="display:flex;gap:16px;font-size:13px">
+        <span>${r.dnsCheck.spf ? '✅' : '❌'} SPF</span>
+        <span>${r.dnsCheck.dmarc ? '✅' : '❌'} DMARC</span>
+      </div>`;
+  } else { dnsCard.style.display = 'none'; }
+
+  // Issues
+  const issueColors = { high: '#E24B4A', medium: '#BA7517', low: '#888' };
+  const issueBg = { high: '#FCEBEB', medium: '#FAEEDA', low: '#F1EFE8' };
+  document.getElementById('ss-issues-list').innerHTML = r.issues.length
+    ? r.issues.map(i => `
+        <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid #f0f0ee;font-size:13px">
+          <span style="background:${issueBg[i.severity]};color:${issueColors[i.severity]};border-radius:4px;padding:1px 6px;font-size:11px;font-weight:600;flex-shrink:0;margin-top:1px">${i.severity.toUpperCase()}</span>
+          <span>${i.text}</span>
+        </div>`).join('')
+    : '<div style="color:#1D9E75;font-size:13px;padding:.5rem 0">Sin problemas detectados 🎉</div>';
+
+  document.getElementById('ss-issues-card').style.display = r.issues.length ? 'block' : 'none';
+
+  // Good practices
+  document.getElementById('ss-good-list').innerHTML = r.goodPractices.length
+    ? r.goodPractices.map(g => `<div style="font-size:13px;padding:5px 0;border-bottom:1px solid #f0f0ee;color:#3B6D11">✓ ${g}</div>`).join('')
+    : '<div style="color:#888;font-size:13px">Ninguna buena práctica detectada todavía.</div>';
+  document.getElementById('ss-good-card').style.display = 'block';
+}
+
+// ======== WARM-UP ========
+async function loadWarmup() {
+  const r = await fetch(API + '/api/warmup/config').then(x => x.json());
+  const cfg = r.config;
+
+  // Set config fields
+  document.getElementById('wu-enabled').checked = cfg.enabled;
+  document.getElementById('wu-hour').value = cfg.hour;
+  document.getElementById('wu-minute').value = cfg.minute;
+
+  // Render SMTP accounts status
+  const el = document.getElementById('wu-accounts-list');
+  if (!r.smtpAccounts.length) {
+    el.innerHTML = '<div style="color:#888;text-align:center;padding:1rem;font-size:13px">Sin cuentas SMTP. Añade cuentas en la sección "Cuentas SMTP".</div>';
+  } else {
+    el.innerHTML = r.smtpAccounts.map(a => {
+      const pct = Math.round((a.warmup_day / a.total_days) * 100);
+      const barColor = a.is_ready ? '#1D9E75' : pct > 50 ? '#BA7517' : '#6366f1';
+      const statusBadge = a.is_ready
+        ? '<span class="badge badge-green">✓ Listo para envío</span>'
+        : a.warmup_active
+        ? '<span class="badge badge-blue">En warm-up</span>'
+        : '<span class="badge badge-gray">Sin iniciar</span>';
+      return \`<div style="padding:12px 0;border-bottom:1px solid #f0f0ee">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap">
+          <div style="flex:1;min-width:180px">
+            <div style="font-size:13px;font-weight:500">\${a.email}</div>
+            <div style="font-size:12px;color:#888">
+              \${a.warmup_start ? 'Iniciado: ' + new Date(a.warmup_start).toLocaleDateString('es-ES') : 'No iniciado'}
+              \${a.last_run ? ' · Último día: ' + a.last_run : ''}
+            </div>
+          </div>
+          <div style="text-align:center;min-width:80px">
+            <div style="font-size:20px;font-weight:700;color:\${barColor}">\${a.warmup_day}/\${a.total_days}</div>
+            <div style="font-size:11px;color:#888">días</div>
+          </div>
+          <div style="text-align:center;min-width:80px">
+            <div style="font-size:20px;font-weight:700">\${a.current_volume}</div>
+            <div style="font-size:11px;color:#888">emails/día actual</div>
+          </div>
+          <div>\${statusBadge}</div>
+          <button class="btn btn-danger btn-sm" onclick="resetWarmup(\${a.id}, '\${a.email}')">Reiniciar</button>
+        </div>
+        <div class="progress-bar" style="height:8px">
+          <div class="progress-fill" style="width:\${Math.min(pct,100)}%;background:\${barColor}"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-top:3px">
+          <span>Día 1 · 5/día</span><span>Día 14 · 15/día</span><span>Día 21 · 30/día</span><span>Día 28 · 50/día ✓</span>
+        </div>
+      </div>\`;
+    }).join('');
+  }
+
+  // External accounts
+  loadWarmupExternalAccounts();
+  // Log
+  loadWarmupLog();
+}
+
+async function loadWarmupExternalAccounts() {
+  const data = await fetch(API + '/api/warmup/accounts').then(r => r.json());
+  const el = document.getElementById('wu-ext-list');
+  if (!data.length) { el.innerHTML = '<div style="color:#888;font-size:13px">Sin buzones externos añadidos.</div>'; return; }
+  el.innerHTML = '<table><thead><tr><th>Email</th><th>IMAP host</th><th>Puerto</th><th></th></tr></thead><tbody>' +
+    data.map(a => \`<tr>
+      <td>\${a.email}</td>
+      <td style="color:#888;font-size:12px">\${a.imap_host}</td>
+      <td>\${a.imap_port}</td>
+      <td><button class="btn btn-danger" onclick="deleteWarmupAccount(\${a.id})">Eliminar</button></td>
+    </tr>\`).join('') + '</tbody></table>';
+}
+
+async function loadWarmupLog() {
+  const logs = await fetch(API + '/api/warmup/log').then(r => r.json());
+  const body = document.getElementById('wu-log-body');
+  const empty = document.getElementById('wu-log-empty');
+  if (!logs.length) { body.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  body.innerHTML = logs.map(l => \`<tr>
+    <td style="font-size:12px">\${new Date(l.ran_at).toLocaleString('es-ES')}</td>
+    <td style="font-size:12px">\${l.account_email}</td>
+    <td><span class="badge badge-blue">Día \${l.day_number}</span></td>
+    <td style="color:#888">\${l.target}</td>
+    <td><span class="badge badge-green">\${l.sent}</span></td>
+    <td>\${l.errors > 0 ? '<span class="badge badge-red">' + l.errors + '</span>' : '<span style="color:#888">0</span>'}</td>
+  </tr>\`).join('');
+}
+
+async function saveWarmupConfig() {
+  const enabled = document.getElementById('wu-enabled').checked;
+  const hour = +document.getElementById('wu-hour').value;
+  const minute = +document.getElementById('wu-minute').value;
+  await fetch(API + '/api/warmup/config', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ enabled, hour, minute })
+  });
+  toast(enabled ? \`Warm-up activado · se ejecutará a las \${String(hour).padStart(2,'0')}:\${String(minute).padStart(2,'0')} cada día\` : 'Warm-up desactivado');
+}
+
+async function runWarmupNow() {
+  const el = document.getElementById('wu-run-result');
+  el.innerHTML = '<div class="alert alert-amber">Ejecutando warm-up en background... puede tardar varios minutos.</div>';
+  const r = await fetch(API + '/api/warmup/run', { method: 'POST' }).then(x => x.json());
+  el.innerHTML = r.ok
+    ? '<div class="alert alert-green">✓ ' + r.message + ' Revisa el historial en unos minutos.</div>'
+    : '<div class="alert alert-red">Error: ' + r.error + '</div>';
+  setTimeout(loadWarmup, 3000);
+}
+
+async function addWarmupAccount() {
+  const email = document.getElementById('wu-ext-email').value.trim();
+  const imap_host = document.getElementById('wu-ext-imap').value.trim();
+  const imap_port = +document.getElementById('wu-ext-port').value || 993;
+  const imap_pass = document.getElementById('wu-ext-pass').value;
+  if (!email || !imap_host) { toast('Email e IMAP host requeridos', 'red'); return; }
+  const r = await fetch(API + '/api/warmup/accounts', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, imap_host, imap_port, imap_user: email, imap_pass })
+  }).then(x => x.json());
+  if (r.error) { toast(r.error, 'red'); return; }
+  ['wu-ext-email','wu-ext-imap','wu-ext-pass'].forEach(id => document.getElementById(id).value = '');
+  toast('Buzón externo añadido');
+  loadWarmupExternalAccounts();
+}
+
+async function deleteWarmupAccount(id) {
+  await fetch(API + '/api/warmup/accounts/' + id, { method: 'DELETE' });
+  loadWarmupExternalAccounts();
+}
+
+async function resetWarmup(id, email) {
+  if (!confirm(\`¿Reiniciar el warm-up de \${email}? Se borrarán todos los días acumulados.\`)) return;
+  await fetch(API + '/api/warmup/reset/' + id, { method: 'POST' });
+  toast('Warm-up reiniciado');
+  loadWarmup();
+}
+
+// ======== GROUPS ========
+let activeGroupId = null;
+let selectedGroupColor = '#6366f1';
+let wizFileData = null;
+let wizGroups = [];
+
+function selectColor(color, el) {
+  document.querySelectorAll('#color-picker .color-dot').forEach(d => d.style.border = '2px solid transparent');
+  el.style.border = '2px solid #333';
+  selectedGroupColor = color;
+  document.getElementById('grp-color').value = color;
+}
+
+async function loadGroups() {
+  const data = await fetch(API + '/api/groups').then(r => r.json());
+  const el = document.getElementById('groups-list');
+  if (!data.length) { el.innerHTML = '<div style="color:#888;font-size:13px;text-align:center;padding:1rem">Sin grupos todavía</div>'; return; }
+  el.innerHTML = data.map(g => `
+    <div class="group-card" style="cursor:pointer" onclick="selectGroup(${g.id})">
+      <span class="color-dot" style="background:${g.color};width:12px;height:12px"></span>
+      <span style="flex:1;font-size:13px;font-weight:500">${g.name}</span>
+      <span class="badge badge-gray">${g.count}</span>
+    </div>`).join('');
+  // Also populate group filter in subscribers page
+  const sel = document.getElementById('sub-group-filter');
+  if (sel) {
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">Todos los grupos</option>' + data.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+    sel.value = prev;
+  }
+}
+
+async function createGroup() {
+  const name = document.getElementById('grp-name').value.trim();
+  if (!name) { toast('Escribe un nombre para el grupo', 'amber'); return; }
+  const r = await fetch(API + '/api/groups', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, color: document.getElementById('grp-color').value })
+  }).then(r => r.json());
+  if (r.error) { toast(r.error, 'red'); return; }
+  document.getElementById('grp-name').value = '';
+  toast('Grupo creado');
+  loadGroups();
+}
+
+async function selectGroup(id) {
+  activeGroupId = id;
+  const groups = await fetch(API + '/api/groups').then(r => r.json());
+  const g = groups.find(x => x.id === id);
+  if (!g) return;
+  document.getElementById('group-detail-card').style.display = 'block';
+  document.getElementById('group-placeholder').style.display = 'none';
+  document.getElementById('gd-name').textContent = g.name;
+  document.getElementById('gd-dot').style.background = g.color;
+  document.getElementById('gd-count').textContent = `(${g.count} suscriptores)`;
+  loadGroupSubs(id);
+}
+
+async function loadGroupSubs(id) {
+  const subs = await fetch(API + '/api/groups/' + id + '/subscribers').then(r => r.json());
+  document.getElementById('gd-sub-count').textContent = subs.length;
+  document.getElementById('gd-subs').innerHTML = subs.length ? subs.map(s => `<tr>
+    <td><input type="checkbox" class="gsub-check" data-id="${s.id}"/></td>
+    <td>${s.email}</td><td>${s.name||'—'}</td><td>${s.company||'—'}</td><td>${s.sector||'—'}</td>
+    <td><button class="btn btn-danger" onclick="removeFromGroup(${s.id})">Quitar</button></td>
+  </tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:#888;padding:1rem">Sin suscriptores en este grupo</td></tr>';
+}
+
+async function removeFromGroup(subId) {
+  await fetch(API + '/api/groups/' + activeGroupId + '/remove', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subscriber_ids: [subId] })
+  });
+  loadGroupSubs(activeGroupId);
+  loadGroups();
+}
+
+async function deleteGroup(id) {
+  if (!confirm('¿Eliminar este grupo? Los suscriptores no se borran.')) return;
+  await fetch(API + '/api/groups/' + id, { method: 'DELETE' });
+  document.getElementById('group-detail-card').style.display = 'none';
+  document.getElementById('group-placeholder').style.display = 'block';
+  activeGroupId = null;
+  loadGroups();
+  toast('Grupo eliminado');
+}
+
+async function searchSubsForGroup() {
+  const q = document.getElementById('grp-sub-search').value.trim();
+  const el = document.getElementById('grp-sub-results');
+  if (!q) { el.style.display = 'none'; return; }
+  const data = await fetch(API + `/api/subscribers?search=${encodeURIComponent(q)}`).then(r => r.json());
+  el.style.display = 'block';
+  el.innerHTML = data.slice(0, 20).map(s => `
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid #f0f0ee;font-size:13px">
+      <input type="checkbox" class="gsearch-check" data-id="${s.id}"/>
+      <span style="flex:1">${s.email}</span>
+      <span style="color:#888;font-size:12px">${s.company||''}</span>
+    </div>`).join('') || '<div style="padding:1rem;color:#888;text-align:center">Sin resultados</div>';
+}
+
+function selectAllVisible() {
+  document.querySelectorAll('.gsearch-check').forEach(c => c.checked = true);
+}
+
+async function assignSelectedToGroup() {
+  const ids = [...document.querySelectorAll('.gsearch-check:checked')].map(c => +c.dataset.id);
+  if (!ids.length) { toast('Selecciona al menos un suscriptor', 'amber'); return; }
+  await fetch(API + '/api/groups/' + activeGroupId + '/assign', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subscriber_ids: ids })
+  });
+  toast(`${ids.length} suscriptores añadidos al grupo`);
+  document.getElementById('grp-sub-search').value = '';
+  document.getElementById('grp-sub-results').style.display = 'none';
+  loadGroupSubs(activeGroupId);
+  loadGroups();
+}
+
+// ======== IMPORT WIZARD ========
+const FIELD_LABELS = [
+  { field: 'email', label: 'Email *', required: true },
+  { field: 'name', label: 'Nombre', required: false },
+  { field: 'company', label: 'Empresa', required: false },
+  { field: 'sector', label: 'Sector', required: false },
+  { field: 'custom1', label: 'Campo extra', required: false }
+];
+
+let wizMapping = {};
+let wizSelectedGroups = new Set();
+let wizHeaders = [];
+
+async function wizInit() {
+  wizFileData = null; wizMapping = {}; wizSelectedGroups = new Set(); wizHeaders = [];
+  wizGoTo(1);
+  // Load groups for step 2
+  const groups = await fetch(API + '/api/groups').then(r => r.json());
+  wizGroups = groups;
+}
+
+function wizGoTo(step) {
+  document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('wizard-step-' + step).classList.add('active');
+}
+
+async function wizPreview(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('wiz-step1-error').innerHTML = '<div class="alert alert-amber">Leyendo archivo...</div>';
+  const formData = new FormData();
+  formData.append('file', file);
+  wizFileData = file;
+
+  try {
+    const r = await fetch(API + '/api/subscribers/preview', { method: 'POST', body: formData }).then(r => r.json());
+    if (r.error) throw new Error(r.error);
+    wizHeaders = r.headers;
+    document.getElementById('wiz-step1-error').innerHTML = '';
+    document.getElementById('wiz-total-rows').textContent = r.total.toLocaleString('es');
+
+    // Build mapping UI
+    // Auto-detect common column names
+    const autoMap = {};
+    const emailHints = ['email','e-mail','correo','mail'];
+    const nameHints = ['nombre','name','contacto','contact'];
+    const companyHints = ['empresa','company','razon','razón','razon social','compañia'];
+    const sectorHints = ['sector','industria','industry','tipo'];
+    r.headers.forEach(h => {
+      const hl = h.toLowerCase();
+      if (emailHints.some(x => hl.includes(x))) autoMap.email = h;
+      else if (nameHints.some(x => hl.includes(x))) autoMap.name = h;
+      else if (companyHints.some(x => hl.includes(x))) autoMap.company = h;
+      else if (sectorHints.some(x => hl.includes(x))) autoMap.sector = h;
+    });
+    wizMapping = { ...autoMap };
+
+    document.getElementById('wiz-mapping-rows').innerHTML = FIELD_LABELS.map(f => `
+      <div class="col-map-row">
+        <div>
+          <div style="font-size:12px;font-weight:500;color:#1a1a1a">${f.label}</div>
+          <div style="font-size:11px;color:#888">Campo en tu app</div>
+        </div>
+        <div style="text-align:center;color:#888;font-size:16px">→</div>
+        <select onchange="wizMapping['${f.field}']=this.value" style="width:100%">
+          <option value="">— No importar —</option>
+          ${r.headers.map(h => `<option value="${h}" ${autoMap[f.field]===h?'selected':''}>${h}</option>`).join('')}
+        </select>
+      </div>`).join('');
+
+    // Build preview table
+    const thead = '<thead><tr>' + r.headers.map(h => `<th>${h}</th>`).join('') + '</tr></thead>';
+    const tbody = '<tbody>' + r.preview.map(row =>
+      '<tr>' + r.headers.map(h => `<td>${row[h]||''}</td>`).join('') + '</tr>'
+    ).join('') + '</tbody>';
+    document.getElementById('wiz-preview-table').innerHTML = thead + tbody;
+
+    // Groups selector
+    document.getElementById('wiz-groups-select').innerHTML = wizGroups.length
+      ? wizGroups.map(g => `
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+            <input type="checkbox" onchange="wizToggleGroup(${g.id}, this.checked)"/>
+            <span class="color-dot" style="background:${g.color}"></span>
+            ${g.name}
+          </label>`).join('')
+      : '<span style="font-size:13px;color:#888">Sin grupos creados. Crea uno abajo.</span>';
+
+    wizGoTo(2);
+  } catch(e) {
+    document.getElementById('wiz-step1-error').innerHTML = `<div class="alert alert-red">Error: ${e.message}</div>`;
+  }
+  input.value = '';
+}
+
+function wizToggleGroup(id, checked) {
+  if (checked) wizSelectedGroups.add(id); else wizSelectedGroups.delete(id);
+}
+
+async function wizCreateGroup() {
+  const name = document.getElementById('wiz-new-group').value.trim();
+  if (!name) return;
+  const r = await fetch(API + '/api/groups', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, color: '#6366f1' })
+  }).then(r => r.json());
+  if (r.ok) {
+    wizSelectedGroups.add(r.id);
+    wizGroups.push({ id: r.id, name, color: '#6366f1' });
+    document.getElementById('wiz-new-group').value = '';
+    document.getElementById('wiz-groups-select').innerHTML += `
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+        <input type="checkbox" checked onchange="wizToggleGroup(${r.id}, this.checked)"/>
+        <span class="color-dot" style="background:#6366f1"></span> ${name}
+      </label>`;
+    toast('Grupo creado y seleccionado');
+  }
+}
+
+async function wizImport() {
+  if (!wizMapping.email) { toast('Debes asignar la columna de Email', 'red'); return; }
+  if (!wizFileData) { toast('No hay archivo', 'red'); return; }
+  const el = document.getElementById('wiz-import-result');
+  el.innerHTML = '<div class="alert alert-amber">Importando...</div>';
+
+  const formData = new FormData();
+  formData.append('file', wizFileData);
+  formData.append('mapping', JSON.stringify(wizMapping));
+  formData.append('groups', JSON.stringify([...wizSelectedGroups]));
+
+  try {
+    const r = await fetch(API + '/api/subscribers/import', { method: 'POST', body: formData }).then(r => r.json());
+    if (r.error) throw new Error(r.error);
+    el.innerHTML = `<div class="alert alert-green">
+      ✓ <strong>${r.imported}</strong> importados correctamente &nbsp;|&nbsp;
+      ${r.skipped} duplicados/inválidos &nbsp;|&nbsp;
+      Total en archivo: ${r.total}
+      ${wizSelectedGroups.size ? '<br>Asignados a ' + wizSelectedGroups.size + ' grupo(s)' : ''}
+    </div>`;
+    wizFileData = null;
+  } catch(e) {
+    el.innerHTML = `<div class="alert alert-red">Error: ${e.message}</div>`;
+  }
+}
+
+// Patch loadSubscribers to populate group filter on first load
+const _origLoadSubs = loadSubscribers;
+async function loadSubscribers() {
+  // Populate group filter if empty
+  const sel = document.getElementById('sub-group-filter');
+  if (sel && sel.options.length <= 1) {
+    const groups = await fetch(API + '/api/groups').then(r => r.json());
+    groups.forEach(g => {
+      const opt = document.createElement('option');
+      opt.value = g.id; opt.textContent = g.name;
+      sel.appendChild(opt);
+    });
+  }
+  const search = document.getElementById('sub-search').value;
+  const status = document.getElementById('sub-filter').value;
+  const group = sel ? sel.value : '';
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  if (status) params.set('status', status);
+  if (group) params.set('group', group);
+  const data = await fetch(API + '/api/subscribers?' + params).then(r => r.json());
+  const body = document.getElementById('subs-body');
+  const empty = document.getElementById('subs-empty');
+  if (!data.length) { body.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  const allGroups = await fetch(API + '/api/groups').then(r => r.json());
+  body.innerHTML = data.map(s => {
+    const chips = (s.groups||[]).map(gid => {
+      const g = allGroups.find(x => x.id === gid);
+      return g ? `<span class="group-chip" style="background:${g.color}20;color:${g.color};border:1px solid ${g.color}40">${g.name}</span>` : '';
+    }).join('');
+    return `<tr>
+      <td>${s.email}</td>
+      <td>${s.name||'—'}</td>
+      <td>${s.company||'—'}</td>
+      <td>${s.sector||'—'}</td>
+      <td>${chips || '<span style="color:#ccc;font-size:12px">—</span>'}</td>
+      <td>${statusBadge(s.status)}</td>
+      <td><button class="btn btn-danger" onclick="deleteSub(${s.id})">Eliminar</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// Update send plan to allow selecting group
+
+// ---- TRACKING ----
+async function loadTracking() {
+  const data = await fetch(API + '/track/opens').then(r => r.json());
+  const el = document.getElementById('tracking-list');
+  if (!data.length) { el.innerHTML = '<div class="card" style="text-align:center;padding:2rem;color:#888">Aún no hay campañas enviadas.</div>'; return; }
+  el.innerHTML = data.map(c => {
+    const rateColor = c.open_rate >= 30 ? '#1D9E75' : c.open_rate >= 15 ? '#BA7517' : '#E24B4A';
+    return `<div class="card" style="margin-bottom:1rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div>
+          <div style="font-weight:600">${c.name}</div>
+          <div style="font-size:12px;color:#888">${c.subject}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:26px;font-weight:700;color:${rateColor}">${c.open_rate}%</div>
+          <div style="font-size:11px;color:#888">tasa apertura</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+        <div class="metric" style="padding:.6rem"><div class="metric-label">Enviados</div><div style="font-size:18px;font-weight:600">${c.total_sent}</div></div>
+        <div class="metric" style="padding:.6rem"><div class="metric-label">Abiertos</div><div style="font-size:18px;font-weight:600;color:#1D9E75">${c.total_opened}</div></div>
+        <div class="metric" style="padding:.6rem"><div class="metric-label">Sin abrir</div><div style="font-size:18px;font-weight:600;color:#888">${c.total_sent - c.total_opened}</div></div>
+      </div>
+      <div class="progress-bar" style="height:8px"><div class="progress-fill" style="width:${c.open_rate}%;background:${rateColor}"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:11px;color:#888">
+        <span>0%</span><span>Objetivo: >25%</span><span>100%</span>
+      </div>
+      <div style="margin-top:12px">
+        <button class="btn btn-outline btn-sm" onclick="loadCampaignDetail(${c.id}, this)">Ver detalle por contacto</button>
+      </div>
+      <div id="detail-${c.id}" style="margin-top:12px"></div>
+    </div>`;
+  }).join('');
+}
+
+async function loadCampaignDetail(campaignId, btn) {
+  const el = document.getElementById('detail-' + campaignId);
+  if (el.innerHTML) { el.innerHTML = ''; btn.textContent = 'Ver detalle por contacto'; return; }
+  btn.textContent = 'Ocultar';
+  el.innerHTML = '<div style="color:#888;font-size:13px">Cargando...</div>';
+  const data = await fetch(API + '/track/stats/' + campaignId).then(r => r.json());
+  el.innerHTML = '<table><thead><tr><th>Email</th><th>Empresa</th><th>¿Abrió?</th><th>Cuándo</th></tr></thead><tbody>' +
+    data.detail.map(d => `<tr>
+      <td>${d.email}</td>
+      <td>${d.company || '—'}</td>
+      <td>${d.opened ? '<span class="badge badge-green">Sí</span>' : '<span class="badge badge-gray">No</span>'}</td>
+      <td style="font-size:12px;color:#888">${d.opened_at ? new Date(d.opened_at).toLocaleString('es-ES') : '—'}</td>
+    </tr>`).join('') + '</tbody></table>';
+}
+
+// ---- SEED TEST ----
+async function loadSeedPage() {
+  // populate smtp select
+  const accounts = await fetch(API + '/api/smtp').then(r => r.json());
+  const sel = document.getElementById('seed-smtp');
+  sel.innerHTML = accounts.map(a => `<option value="${a.id}">${a.email}</option>`).join('');
+  // load history
+  loadSeedHistory();
+}
+
+async function loadSeedHistory() {
+  const data = await fetch(API + '/api/seed').then(r => r.json());
+  const body = document.getElementById('seed-body-table');
+  const empty = document.getElementById('seed-empty');
+  if (!data.length) { body.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  body.innerHTML = data.map(t => {
+    const resultBadge = t.inbox_result === 'inbox' ? '<span class="badge badge-green">Bandeja entrada</span>'
+      : t.inbox_result === 'spam' ? '<span class="badge badge-red">SPAM</span>'
+      : '<span class="badge badge-gray">Pendiente</span>';
+    return `<tr>
+      <td>${t.email}</td>
+      <td style="font-size:12px;color:#888">${t.smtp_account}</td>
+      <td style="font-size:12px;color:#888">${new Date(t.sent_at).toLocaleString('es-ES')}</td>
+      <td>
+        <select onchange="updateSeedResult(${t.id}, this.value)" style="font-size:12px;padding:3px 6px">
+          <option value="pending" ${t.inbox_result==='pending'?'selected':''}>Pendiente</option>
+          <option value="inbox" ${t.inbox_result==='inbox'?'selected':''}>Bandeja entrada</option>
+          <option value="spam" ${t.inbox_result==='spam'?'selected':''}>SPAM</option>
+          <option value="missing" ${t.inbox_result==='missing'?'selected':''}>No llegó</option>
+        </select>
+      </td>
+      <td><input type="text" placeholder="Notas..." value="${t.notes||''}" style="width:120px;font-size:12px" onchange="updateSeedNotes(${t.id}, this.value)"/></td>
+      <td><button class="btn btn-danger" onclick="deleteSeed(${t.id})">Eliminar</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function sendSeedTest() {
+  const raw = document.getElementById('seed-emails').value.trim();
+  const seed_emails = raw.split(/
+|,/).map(s => s.trim()).filter(s => s.includes('@'));
+  const subject = document.getElementById('seed-subject').value.trim() || 'Test entregabilidad ' + new Date().toLocaleDateString('es-ES');
+  const body_html = document.getElementById('seed-body').value.trim() || '<p>Test de entregabilidad.</p>';
+  const smtp_account_id = document.getElementById('seed-smtp').value;
+  if (!seed_emails.length) { toast('Introduce al menos un email semilla', 'red'); return; }
+  const el = document.getElementById('seed-result');
+  el.innerHTML = '<div class="alert alert-amber">Enviando...</div>';
+  const r = await fetch(API + '/api/seed/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ seed_emails, subject, body_html, smtp_account_id })
+  }).then(r => r.json());
+  if (r.error) { el.innerHTML = `<div class="alert alert-red">${r.error}</div>`; return; }
+  const ok = r.results.filter(x => x.ok).length;
+  el.innerHTML = `<div class="alert alert-green">Enviados ${ok}/${r.results.length}. Revisa tu buzón y marca el resultado abajo.</div>`;
+  loadSeedHistory();
+}
+
+async function updateSeedResult(id, val) {
+  await fetch(API + '/api/seed/' + id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ inbox_result: val }) });
+  toast('Resultado guardado');
+}
+
+async function updateSeedNotes(id, val) {
+  await fetch(API + '/api/seed/' + id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ notes: val }) });
+}
+
+async function deleteSeed(id) {
+  await fetch(API + '/api/seed/' + id, { method: 'DELETE' });
+  loadSeedHistory();
+}
+
+// Init
+loadDashboard();
+</script>
+</body>
+</html>
+<script>
+// ======== TEMPLATES ========
+let currentTplId = null;
+let currentTplData = null;
+let globalLogoUrl = '';
+
+async function loadTemplates() {
+  const [templates, logoData] = await Promise.all([
+    fetch(API + '/api/templates').then(r => r.json()),
+    fetch(API + '/api/templates/assets/logo').then(r => r.json()).catch(() => ({url:''}))
+  ]);
+  globalLogoUrl = logoData.url || '';
+  if (globalLogoUrl) {
+    document.getElementById('logo-preview-img').src = globalLogoUrl;
+    document.getElementById('logo-preview-wrap').style.display = 'block';
+  }
+
+  const catColors = { cold: '#185FA5', 'follow-up': '#BA7517', nurture: '#1D9E75' };
+  const catLabels = { cold: 'Cold', 'follow-up': 'Follow-up', nurture: 'Nurturing' };
+
+  document.getElementById('templates-grid').innerHTML = templates.map(t => `
+    <div class="card" style="cursor:pointer;transition:.1s;padding:0;overflow:hidden" onclick="openTplEditor(${t.id})">
+      <div style="height:80px;background:${t.thumbnail_color}20;display:flex;align-items:center;justify-content:center;border-bottom:3px solid ${t.thumbnail_color}">
+        <div style="width:48px;height:56px;background:#fff;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.12);display:flex;flex-direction:column;padding:6px;gap:3px">
+          <div style="height:4px;background:${t.thumbnail_color};border-radius:2px"></div>
+          <div style="height:3px;background:#ddd;border-radius:2px;width:90%"></div>
+          <div style="height:3px;background:#ddd;border-radius:2px;width:70%"></div>
+          <div style="height:3px;background:#ddd;border-radius:2px;width:80%"></div>
+          <div style="height:6px;background:${t.thumbnail_color};border-radius:2px;width:50%;margin-top:auto"></div>
+        </div>
+      </div>
+      <div style="padding:10px 12px">
+        <div style="font-size:13px;font-weight:500;margin-bottom:3px">${t.name}</div>
+        <div style="font-size:11px;color:#888;margin-bottom:6px">${t.description}</div>
+        <span style="font-size:10px;padding:1px 7px;border-radius:20px;background:${catColors[t.category]||'#888'}20;color:${catColors[t.category]||'#888'};font-weight:500">${catLabels[t.category]||t.category}</span>
+        ${t.stats && t.stats.campaigns_used > 0 ? `<span style="font-size:10px;color:#888;margin-left:6px">${t.stats.open_rate||0}% apertura</span>` : ''}
+      </div>
+    </div>`).join('');
+
+  loadTplComparison();
+}
+
+async function openTplEditor(id) {
+  currentTplId = id;
+  const t = await fetch(API + '/api/templates/' + id).then(r => r.json());
+  currentTplData = t;
+  document.getElementById('tpl-editor-title').textContent = 'Editando: ' + t.name;
+  document.getElementById('tpl-editor').style.display = 'block';
+  document.getElementById('tpl-editor').scrollIntoView({ behavior: 'smooth' });
+
+  // Build vars form
+  const vars = t.variables || {};
+  const colorFields = ['primary_color', 'accent_color'];
+  const textareaFields = ['body_text', 'ps_text'];
+  const varLabels = {
+    primary_color: 'Color principal', accent_color: 'Color acento',
+    sender_name: 'Nombre remitente', sender_title: 'Cargo', sender_company: 'Empresa',
+    cta_text: 'Texto del botón CTA', cta_url: 'URL del botón CTA',
+    body_text: 'Cuerpo del mensaje', ps_text: 'Posdata (P.D.)', subject_line: 'Asunto sugerido'
+  };
+  document.getElementById('tpl-vars-form').innerHTML = Object.entries(vars).map(([k,v]) => {
+    const label = varLabels[k] || k;
+    if (colorFields.includes(k)) return `<div style="margin-bottom:10px"><label class="form-label">${label}</label><div style="display:flex;gap:8px;align-items:center"><input type="color" id="tvar-${k}" value="${v||'#000000'}" onchange="updateTplPreview()"/><input type="text" id="tvar-${k}-text" value="${v||''}" style="width:100px;font-family:monospace;font-size:12px" oninput="syncColorPicker('${k}')"/></div></div>`;
+    if (textareaFields.includes(k)) return `<div style="margin-bottom:10px"><label class="form-label">${label}</label><textarea id="tvar-${k}" style="width:100%;min-height:80px;font-size:13px" oninput="updateTplPreview()">${v||''}</textarea></div>`;
+    return `<div style="margin-bottom:10px"><label class="form-label">${label}</label><input type="text" id="tvar-${k}" value="${v||''}" style="width:100%" oninput="updateTplPreview()"/></div>`;
+  }).join('');
+
+  updateTplPreview();
+}
+
+function syncColorPicker(k) {
+  const txt = document.getElementById('tvar-'+k+'-text').value;
+  if (/^#[0-9a-f]{6}$/i.test(txt)) document.getElementById('tvar-'+k).value = txt;
+  updateTplPreview();
+}
+
+function closeTplEditor() {
+  document.getElementById('tpl-editor').style.display = 'none';
+  currentTplId = null;
+}
+
+async function updateTplPreview() {
+  if (!currentTplData) return;
+  const variables = {};
+  (currentTplData.variables ? Object.keys(currentTplData.variables) : []).forEach(k => {
+    const el = document.getElementById('tvar-'+k);
+    if (el) variables[k] = el.value;
+  });
+  const r = await fetch(API + '/api/templates/' + currentTplId + '/preview', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ variables, logo_url: globalLogoUrl })
+  }).then(x => x.json());
+  const frame = document.getElementById('tpl-preview-frame');
+  frame.srcdoc = r.html;
+}
+
+async function saveTplChanges() {
+  if (!currentTplId) return;
+  const variables = {};
+  (currentTplData.variables ? Object.keys(currentTplData.variables) : []).forEach(k => {
+    const el = document.getElementById('tvar-'+k);
+    if (el) variables[k] = el.value;
+  });
+  await fetch(API + '/api/templates/' + currentTplId, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ variables })
+  });
+  toast('Plantilla guardada');
+  loadTemplates();
+}
+
+function useTplInCampaign() {
+  // Pre-select this template and navigate to scheduler
+  window._preselectedTemplate = currentTplId;
+  closeTplEditor();
+  showPage('scheduler', document.querySelector('[onclick*="scheduler"]'));
+}
+
+async function uploadLogo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const formData = new FormData();
+  formData.append('logo', file);
+  const r = await fetch(API + '/api/templates/logo', { method: 'POST', body: formData }).then(x => x.json());
+  if (r.ok) {
+    globalLogoUrl = r.url;
+    document.getElementById('logo-preview-img').src = r.url;
+    document.getElementById('logo-preview-wrap').style.display = 'block';
+    toast('Logo subido correctamente');
+    if (currentTplId) updateTplPreview();
+  }
+}
+
+async function setLogoUrl() {
+  const url = document.getElementById('logo-url-input').value.trim();
+  if (!url) return;
+  await fetch(API + '/api/templates/logo-url', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
+  globalLogoUrl = url;
+  document.getElementById('logo-preview-img').src = url;
+  document.getElementById('logo-preview-wrap').style.display = 'block';
+  toast('Logo aplicado');
+  if (currentTplId) updateTplPreview();
+}
+
+async function clearLogo() {
+  await fetch(API + '/api/templates/logo-url', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: '' }) });
+  globalLogoUrl = '';
+  document.getElementById('logo-preview-wrap').style.display = 'none';
+  document.getElementById('logo-url-input').value = '';
+  toast('Logo eliminado');
+}
+
+async function loadTplComparison() {
+  const stats = await fetch(API + '/api/scheduler/stats/templates').then(r => r.json()).catch(() => []);
+  const el = document.getElementById('tpl-comparison');
+  if (!stats.length) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  const max = Math.max(...stats.map(s => s.open_rate), 1);
+  document.getElementById('tpl-stats-list').innerHTML = stats.map((s,i) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f0f0ee">
+      <div style="width:20px;font-size:13px;color:#888;text-align:right">${i+1}</div>
+      <div style="width:10px;height:10px;border-radius:50%;background:${s.thumbnail_color};flex-shrink:0"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500">${s.name}</div>
+        <div style="height:6px;background:#f0f0ee;border-radius:3px;margin-top:4px;overflow:hidden">
+          <div style="height:100%;background:${s.thumbnail_color};border-radius:3px;width:${Math.round((s.open_rate/max)*100)}%;transition:.4s"></div>
+        </div>
+      </div>
+      <div style="text-align:right;min-width:80px">
+        <div style="font-size:16px;font-weight:700;color:${s.open_rate>=25?'#1D9E75':s.open_rate>=15?'#BA7517':'#E24B4A'}">${s.open_rate}%</div>
+        <div style="font-size:11px;color:#888">${s.total_sent} enviados</div>
+      </div>
+    </div>`).join('');
+}
+
+// ======== SCHEDULER ========
+let selectedSectors = new Set();
+
+async function loadScheduler() {
+  const [templates, groups, sectors] = await Promise.all([
+    fetch(API + '/api/templates').then(r => r.json()),
+    fetch(API + '/api/groups').then(r => r.json()),
+    fetch(API + '/api/subscribers/sectors').then(r => r.json()).catch(() => [])
+  ]);
+
+  const tplSel = document.getElementById('sch-template');
+  tplSel.innerHTML = '<option value="">Sin plantilla (solo texto)</option>' +
+    templates.map(t => `<option value="${t.id}" ${window._preselectedTemplate==t.id?'selected':''}>${t.name}</option>`).join('');
+  window._preselectedTemplate = null;
+
+  const grpSel = document.getElementById('sch-group');
+  grpSel.innerHTML = '<option value="">Sin filtro de grupo</option>' +
+    groups.map(g => `<option value="${g.id}">${g.name} (${g.count})</option>`).join('');
+
+  // Render sector chips
+  const sectorsEl = document.getElementById('sch-sectors-list');
+  if (!sectors.length) {
+    sectorsEl.innerHTML = '<span style="font-size:12px;color:#aaa">Sin sectores en la lista (importa contactos primero)</span>';
+  } else {
+    sectorsEl.innerHTML = sectors.map(s => `
+      <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;padding:3px 10px;border-radius:20px;border:1px solid #ddd;font-size:12px;background:#fff;transition:.1s" id="chip-${s.sector.replace(/\s+/g,'_')}">
+        <input type="checkbox" style="display:none" onchange="toggleSector('${s.sector}', this.checked, this.parentElement)"/>
+        <span>${s.sector}</span>
+        <span style="color:#aaa">${s.pending}</span>
+      </label>`).join('');
+  }
+
+  selectedSectors = new Set();
+
+  // Set default datetime to tomorrow 8:00
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1); tomorrow.setHours(8,0,0,0);
+  document.getElementById('sch-datetime').value = tomorrow.toISOString().slice(0,16);
+
+  if (document.getElementById('sch-template').value) previewSchTemplate();
+
+  loadScheduledList();
+}
+
+function toggleSector(sector, checked, chipEl) {
+  if (checked) {
+    selectedSectors.add(sector);
+    chipEl.style.background = '#EAF3DE';
+    chipEl.style.borderColor = '#1D9E75';
+    chipEl.style.color = '#3B6D11';
+  } else {
+    selectedSectors.delete(sector);
+    chipEl.style.background = '#fff';
+    chipEl.style.borderColor = '#ddd';
+    chipEl.style.color = '';
+  }
+  updateAudiencePreview();
+}
+
+let audiencePreviewTimer = null;
+async function updateAudiencePreview() {
+  clearTimeout(audiencePreviewTimer);
+  audiencePreviewTimer = setTimeout(async () => {
+    const group_id = document.getElementById('sch-group').value;
+    const sector_filter = [...selectedSectors];
+    if (!group_id && !sector_filter.length) {
+      document.getElementById('sch-audience-preview').style.display = 'none';
+      return;
+    }
+    const r = await fetch(API + '/api/subscribers/audience-preview', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ group_id: group_id || null, sector_filter })
+    }).then(x => x.json());
+    const el = document.getElementById('sch-audience-preview');
+    el.style.display = 'block';
+    document.getElementById('sch-audience-count').textContent = r.count.toLocaleString('es');
+    document.getElementById('sch-audience-sample').innerHTML = r.sample.length
+      ? 'Ej: ' + r.sample.map(s => `${s.email}${s.company?' ('+s.company+')':''}`).join(', ')
+      : '';
+  }, 400);
+}
+
+async function previewSchTemplate() {
+  const tplId = document.getElementById('sch-template').value;
+  const mini = document.getElementById('sch-tpl-mini-preview');
+  if (!tplId) { mini.style.display = 'none'; return; }
+  const r = await fetch(API + '/api/templates/' + tplId + '/preview', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ logo_url: globalLogoUrl })
+  }).then(x => x.json());
+  mini.style.display = 'block';
+  document.getElementById('sch-mini-frame').srcdoc = r.html;
+}
+
+function toggleRamp() {
+  const on = document.getElementById('sch-ramp').checked;
+  document.getElementById('sch-ramp-config').style.display = on ? 'block' : 'none';
+}
+
+async function createScheduledCampaign() {
+  const name = document.getElementById('sch-name').value.trim();
+  const subject = document.getElementById('sch-subject').value.trim();
+  const from_name = document.getElementById('sch-from').value.trim();
+  const template_id = document.getElementById('sch-template').value;
+  const group_id = document.getElementById('sch-group').value;
+  const scheduled_at = document.getElementById('sch-datetime').value;
+  const repeat = document.getElementById('sch-repeat').value;
+  const ramp_enabled = document.getElementById('sch-ramp').checked;
+  const rampRaw = document.getElementById('sch-ramp-values').value;
+  const ramp_schedule = rampRaw.split(',').map(x => +x.trim()).filter(x => x > 0);
+
+  if (!name || !subject || !scheduled_at) { toast('Completa nombre, asunto y fecha', 'red'); return; }
+
+  const el = document.getElementById('sch-result');
+  el.innerHTML = '<div class="alert alert-amber">Programando...</div>';
+
+  const r = await fetch(API + '/api/scheduler', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, subject, from_name, template_id: template_id||null, group_id: group_id||null, sector_filter: [...selectedSectors], scheduled_at: new Date(scheduled_at).toISOString(), repeat: repeat||null, ramp_enabled, ramp_schedule })
+  }).then(x => x.json());
+
+  if (r.error) { el.innerHTML = `<div class="alert alert-red">${r.error}</div>`; return; }
+  el.innerHTML = '<div class="alert alert-green">✓ Campaña programada correctamente</div>';
+  loadScheduledList();
+}
+
+async function loadScheduledList() {
+  const list = await fetch(API + '/api/scheduler').then(r => r.json());
+  const el = document.getElementById('sch-list');
+  if (!list.length) { el.innerHTML = '<div style="color:#888;text-align:center;padding:2rem;font-size:13px">Sin campañas programadas todavía.</div>'; return; }
+
+  const templates = await fetch(API + '/api/templates').then(r => r.json());
+  const tplMap = Object.fromEntries(templates.map(t => [t.id, t]));
+
+  const statusBadges = {
+    active: '<span class="badge badge-green">Activa</span>',
+    completed: '<span class="badge badge-gray">Completada</span>',
+    paused: '<span class="badge badge-amber">Pausada</span>'
+  };
+
+  el.innerHTML = list.map(sc => {
+    const tpl = tplMap[sc.template_id];
+    const rampInfo = sc.ramp_enabled ? `<div style="font-size:11px;color:#6366f1;margin-top:3px">📈 Ramp-up día ${sc.ramp_day||0}: ${(sc.ramp_schedule||[])[Math.min((sc.ramp_day||0), (sc.ramp_schedule||[]).length-1)]||'—'} emails</div>` : '';
+    return `<div style="padding:12px 0;border-bottom:1px solid #f0f0ee">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:13px;font-weight:500">${sc.name}</span>
+            ${statusBadges[sc.status]||''}
+            ${sc.repeat ? `<span class="badge badge-blue">${sc.repeat==='daily'?'Diaria':'Semanal'}</span>` : ''}
+          </div>
+          <div style="font-size:12px;color:#888;margin-top:3px">
+            ${sc.subject} · ${tpl?`<span style="color:${tpl.thumbnail_color}">${tpl.name}</span>`:'Sin plantilla'}
+          </div>
+          <div style="font-size:11px;color:#6366f1;margin-top:2px">👥 ${sc.audience_label||'Todos los pendientes'}</div>
+          <div style="font-size:11px;color:#888;margin-top:2px">
+            📅 ${new Date(sc.scheduled_at).toLocaleString('es-ES')}
+            ${sc.last_run ? ` · Último envío: ${new Date(sc.last_run).toLocaleString('es-ES')} (${sc.last_sent} emails)` : ''}
+          </div>
+          ${rampInfo}
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn btn-outline btn-sm" onclick="runSchNow(${sc.id})">▶ Ahora</button>
+          <button class="btn btn-danger" onclick="deleteScheduled(${sc.id})">Eliminar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function runSchNow(id) {
+  toast('Enviando...', 'amber');
+  await fetch(API + '/api/scheduler/' + id + '/run', { method: 'POST' });
+  toast('Envío iniciado en background');
+  setTimeout(loadScheduledList, 2000);
+}
+
+async function deleteScheduled(id) {
+  if (!confirm('¿Eliminar esta campaña programada?')) return;
+  await fetch(API + '/api/scheduler/' + id, { method: 'DELETE' });
+  loadScheduledList();
+}
+</script>
